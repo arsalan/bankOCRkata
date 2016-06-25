@@ -3,24 +3,35 @@ require 'spec_helper'
 # User Story #1 - Parse account numbers
 describe 'BankOCR', fakefs: true do
 	let(:fileName) { '/tmp/accounts.txt' }
-	let(:expectedNumbersCount) { 3 }
+	let(:expectedNumbersCount) { 5 }
 	def create_test_account_file(file)
-		zeros =	[	" _  _  _  _  _  _  _  _  _ ",
-               		"| || || || || || || || || |",
-               		"|_||_||_||_||_||_||_||_||_|"].join("\n")
+		zeros =				[	" _  _  _  _  _  _  _  _  _ ",
+               					"| || || || || || || || || |",
+               					"|_||_||_||_||_||_||_||_||_|"].join("\n")
 
-    	ones =	[	"                           ",
-           			"  |  |  |  |  |  |  |  |  |",
-           			"  |  |  |  |  |  |  |  |  |"].join("\n")
+    	ones =				[	"                           ",
+           						"  |  |  |  |  |  |  |  |  |",
+           						"  |  |  |  |  |  |  |  |  |"].join("\n")
 
-        twos = [	" _  _  _  _  _  _  _  _  _ ",
- 					" _| _| _| _| _| _| _| _| _|",
-					"|_ |_ |_ |_ |_ |_ |_ |_ |_ "].join("\n")
+        twos = 				[	" _  _  _  _  _  _  _  _  _ ",
+ 								" _| _| _| _| _| _| _| _| _|",
+								"|_ |_ |_ |_ |_ |_ |_ |_ |_ "].join("\n")
+
+		zero_to_eight = 	[	" _     _  _     _  _  _  _ ",
+ 								"| |  | _| _||_||_ |_   ||_|",
+								"|_|  ||_  _|  | _||_|  ||_|"].join("\n")
+
+		nine_to_one = 		[	" _  _  _  _  _     _  _    ",
+ 								"|_||_|  ||_ |_ |_| _| _|  |",
+								" _||_|  ||_| _|  | _||_   |"].join("\n")
 
 		File.open(file, 'w') do |f|
 			f.puts(zeros + "\n\n")
 			f.puts(ones + "\n\n")
 			f.puts(twos + "\n\n")
+			f.puts(zero_to_eight + "\n\n")
+			f.puts(nine_to_one + "\n\n")
+
 		end
 	end
 
@@ -67,18 +78,73 @@ describe 'BankOCR', fakefs: true do
 						" _  _  _  _  _  _  _  _  _ ".split(""),
 						" _| _| _| _| _| _| _| _| _|".split(""),
 						"|_ |_ |_ |_ |_ |_ |_ |_ |_ ".split("")
+					],
+					[
+						" _     _  _     _  _  _  _ ".split(""),
+						"| |  | _| _||_||_ |_   ||_|".split(""),
+						"|_|  ||_  _|  | _||_|  ||_|".split("")
+					],
+					[
+						" _  _  _  _  _     _  _    ".split(""),
+						"|_||_|  ||_ |_ |_| _| _|  |".split(""),
+						" _||_|  ||_| _|  | _||_   |".split("")
 					]
 				]
 				expect(numbers_map).to eql(expected_map)
 			end
 
-			it 'correctly detects zero digit' do
+			it 'correctly detects zero' do
 				ocr = BankOCR.new(fileName)
 				zero = [[" ", "_", " "],
              			["|", " ", "|"],
              			["|", "_", "|"]]
 				detectedDigit = ocr.detect_digit(zero)
 				expect(detectedDigit).to eq("0")
+			end
+
+			it 'correctly detects three' do
+				ocr = BankOCR.new(fileName)
+				three = [[" ", "_", " "],
+             			 [" ", "_", "|"],
+             			 [" ", "_", "|"]]
+				detectedDigit = ocr.detect_digit(three)
+				expect(detectedDigit).to eq("3")
+			end
+
+			it 'correctly detects four' do
+				ocr = BankOCR.new(fileName)
+				four = [[" ", " ", " "],
+	 		 			["|", "_", "|"],
+	 		 			[" ", " ", "|"]]
+				detectedDigit = ocr.detect_digit(four)
+				expect(detectedDigit).to eq("4")
+			end
+
+			it 'correctly detects five' do
+				ocr = BankOCR.new(fileName)
+				five = [[" ", "_", " "],
+	 		 			["|", "_", " "],
+	 		 			[" ", "_", "|"]]
+				detectedDigit = ocr.detect_digit(five)
+				expect(detectedDigit).to eq("5")
+			end
+
+			it 'correctly detects six' do
+				ocr = BankOCR.new(fileName)
+				six =  [[" ", "_", " "],
+	 		 			["|", "_", " "],
+	 		 			["|", "_", "|"]]
+				detectedDigit = ocr.detect_digit(six)
+				expect(detectedDigit).to eq("6")
+			end
+
+			it 'correctly detects seven' do
+				ocr = BankOCR.new(fileName)
+				seven =  [[" ", "_", " "],
+	 		 			  [" ", " ", "|"],
+	 		 			  [" ", " ", "|"]]
+				detectedDigit = ocr.detect_digit(seven)
+				expect(detectedDigit).to eq("7")
 			end
 
 			it 'correctly detects one digit' do
@@ -325,7 +391,7 @@ describe 'BankOCR', fakefs: true do
 			it 'correctly determines all account numbers' do
 				ocr = BankOCR.new(fileName)
 				account_numbers = ocr.parse_account_numbers
-				expect(account_numbers).to eql(["000000000", "111111111", "222222222"])
+				expect(account_numbers).to eql(["000000000", "111111111", "222222222", "012345678", "987654321"])
 			end
 		end
 	end

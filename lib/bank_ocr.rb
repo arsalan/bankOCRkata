@@ -69,6 +69,20 @@ class BankOCR
 				return "1"
 			when DigitConstants::TWO
 				return "2"
+			when DigitConstants::THREE
+				return "3"
+			when DigitConstants::FOUR
+				return "4"
+			when DigitConstants::FIVE
+				return "5"
+			when DigitConstants::SIX
+				return "6"
+			when DigitConstants::SEVEN
+				return "7"
+			when DigitConstants::EIGHT
+				return "8"
+			when DigitConstants::NINE
+				return "9"
 			else
 				return nil
 			end
