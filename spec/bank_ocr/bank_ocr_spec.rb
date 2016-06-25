@@ -43,10 +43,30 @@ describe 'BankOCR', fakefs: true do
 		end
 	end
 
+	context 'when account number is valid' do
+		it 'the calculated checksum is valid' do
+			ocr = BankOCR.new(fileName)
+			correctNumbers = "345882865"
+
+			expect(ocr.validate_checksum(correctNumbers)).to eq("")
+		end
+	end
+
 	context 'when account number is invalid' do
 		it 'the calculated checksum is invalid' do
 			ocr = BankOCR.new(fileName)
-			expect(ocr.validate).to be true
+			correctNumbers = "345882845"
+
+			expect(ocr.validate_checksum(correctNumbers)).to eq("ERR")
+		end
+	end
+
+	context 'when account number has unrecognized digits' do
+		it 'the calculated checksum is invalid' do
+			ocr = BankOCR.new(fileName)
+			correctNumbers = "3458828?5"
+
+			expect(ocr.validate_checksum(correctNumbers)).to eq("ILL")
 		end
 	end
 

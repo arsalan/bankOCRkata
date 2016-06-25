@@ -5,12 +5,14 @@ class BankOCR
 	attr_accessor :account_numbers_map
 	attr_accessor :account_numbers
 	attr_accessor :all_digits_map
+	attr_accessor :validation_results
 
 	def initialize(fileName)
 		@fileContents = IO.readlines(fileName)
 		@account_numbers = []
 		@account_numbers_map = []
 		@all_digits_map = []
+		@validation_results = {}
 	end
 
 	def parse_account_numbers
@@ -19,6 +21,7 @@ class BankOCR
 			detected_number = detect_number(single_number_map)
 			@account_numbers.push(detected_number)
 		end
+		@validation_results = validate(@account_numbers)
 		@account_numbers
 	end
 
@@ -43,8 +46,6 @@ class BankOCR
 	end
 
 	def detect_number(singleNumberMap)
-		
-
 		return nil if singleNumberMap.empty?
 		cumulative = ""
 		@all_digits_map = generate_all_digits_map(singleNumberMap)
@@ -102,5 +103,29 @@ class BankOCR
 			edge = edge + 3
 		end
 		all_digits_map
+	end
+
+	def validate(accountNumbers)
+		validated = false
+		accountNumbers.each do |num|
+			validation_result = validate_checksum(num)
+			validated = validation_result.empty?
+			@validation_results[num] = validation_result
+		end	
+		validated
+	end
+
+	def validate_checksum(num)
+		return "ILL" if num.include?("?")
+		i = 2
+		cumulated = num[-1].to_i
+		reversed = num[0..-2].reverse
+
+		reversed.split("").each do |c|
+			cumulated = cumulated + i*(c.to_i)
+			i = i + 1
+		end
+
+		return cumulated % 11 == 0 ? "" : "ERR"
 	end
 end
