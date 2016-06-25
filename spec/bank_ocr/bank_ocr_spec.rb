@@ -43,6 +43,13 @@ describe 'BankOCR', fakefs: true do
 		end
 	end
 
+	context 'when account number is invalid' do
+		it 'the calculated checksum is invalid' do
+			ocr = BankOCR.new(fileName)
+			expect(ocr.validate).to be true
+		end
+	end
+
 	context 'when input file exists' do
 		
 		describe "reading properly OCR'd account numbers", fakefs: true do
